@@ -1,0 +1,16 @@
+<resources>
+
+    <string name="action_settings">Einstellungen</string>
+    <string name="action_sign_in">Anmelden</string>
+    <string name="action_sign_in_short">Anmelden</string>
+    <string name="app_name">Buhl Roster</string>
+    <string name="error_field_required">Dieses Feld ist erforderlich</string>
+    <string name="error_incorrect_password">Das Passwort ist falsch</string>
+    <string name="error_invalid_email">Der Benutzername ist falsch</string>
+    <string name="error_invalid_password">Das Paswort ist zu kurz</string>
+    <string name="hello_world">Hallo Welt!</string>
+    <string name="prompt_password">Passwort</string>
+    <string name="prompt_username">Benutzername</string>
+    <string name="title_activity_overview">Überblick</string>
+
+</resources>
