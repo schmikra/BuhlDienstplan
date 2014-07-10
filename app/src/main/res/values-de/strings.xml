@@ -13,4 +13,6 @@
     <string name="prompt_username">Benutzername</string>
     <string name="title_activity_overview">Überblick</string>
 
-</resources>
+    <string name="login_text">Please sign in.</string>
+
+sources>
