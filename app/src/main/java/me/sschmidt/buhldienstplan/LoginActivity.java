@@ -144,9 +144,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
             showProgress(true);
             mAuthTask = new UserLoginTask(username, password);
             mAuthTask.execute((Void) null);
-
-            Intent intent = new Intent(LoginActivity.this, Overview.class);
-            startActivity(intent);
         }
     }
 
@@ -259,10 +256,15 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
             parser = new Parser(mUsername, mPassword, getApplicationContext());
 
             if(parser.login()) {
-                return true;
+                if(parser.getMitarbeiterName()) {
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }
+
         }
 
         @Override
@@ -271,7 +273,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
             showProgress(false);
 
             if (success) {
-                finish();
+                Intent intent = new Intent(LoginActivity.this, Overview.class);
+                startActivity(intent);
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();

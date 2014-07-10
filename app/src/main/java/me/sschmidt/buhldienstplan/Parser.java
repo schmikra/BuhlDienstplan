@@ -88,24 +88,38 @@ public class Parser {
     }
 
     public boolean login() {
-       AQuery aq = new AQuery(getContext());
+        AQuery aq = new AQuery(getContext());
 
         Map<String, Object> loginParams = new HashMap<String, Object>();
-        loginParams.put("Name", this.username);
-        loginParams.put("Password", this.password);
+        loginParams.put("Name", getUsername());
+        loginParams.put("Password", getPassword());
         loginParams.put("submit1", "Login");
 
-        aq.ajax(loginUrl, loginParams, String.class, new AjaxCallback<String>() {
-            @Override
+        AjaxCallback<String> ajaxCallback = new AjaxCallback<String>() {
             public void callback(String url, String json, AjaxStatus status) {
                 setCookies(status.getCookies()); // We are saving the cookies in our variable
             }
-        });
+        };
 
-        return true;
+        //aq.ajax(loginUrl, loginParams, String.class, ajaxCallback);
+        ajaxCallback.type(String.class);
+        ajaxCallback.url(loginUrl);
+        ajaxCallback.params(loginParams);
+
+        aq.sync(ajaxCallback);
+
+        String result = ajaxCallback.getStatus().getMessage().toString();
+        String content = ajaxCallback.getResult();
+
+        if(result.equals("OK") && !content.contains("<TITLE>Login</TITLE>")) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public void getMitarbeiterName() {
+
+    public boolean getMitarbeiterName() {
         AQuery aq = new AQuery(getContext());
 
         AjaxCallback<String> ajaxCallback = new AjaxCallback<String>() {
@@ -119,27 +133,17 @@ public class Parser {
             ajaxCallback.cookie(cookie.getName(), cookie.getValue());
         }
 
-        aq.ajax(liesMitarbeiterUrl, String.class, ajaxCallback);
-    }
+        ajaxCallback.url(liesMitarbeiterUrl);
+        ajaxCallback.type(String.class);
 
-    public void test( ) {
+        aq.sync(ajaxCallback);
 
+        String result = ajaxCallback.getStatus().getMessage().toString();
 
-        AQuery aq = new AQuery(getContext());
-
-        AjaxCallback<String> ajaxCallbackTEST = new AjaxCallback<String>() {
-
-            public void callback(String url2, String json, AjaxStatus status) {
-               // TextView txt = (TextView) findViewById(R.id.textView);
-               // txt.setText(json.toString());
-            }
-        };
-
-        for (Cookie cookie : getCookies()) {
-            //ajaxCallbackTEST.cookie(cookie.getName(), cookie.getValue());
-            //Here we are setting the cookie info.
+        if(result.equals("OK")) {
+            return true;
+        } else {
+            return false;
         }
-
-        //aq.ajax(url2, String.class, ajaxCallbackTEST);
     }
 }
