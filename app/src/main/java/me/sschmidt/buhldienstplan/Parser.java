@@ -20,8 +20,9 @@ import java.util.Map;
 public class Parser {
 
     static String loginUrl = "http://old.buhl.de/support/_themes/dienstplan/default.asp";
-    static String gibMitarbeiterUrl = "http://old.buhl.de/support/_themes/dienstplan/dienstplanajax.asp?app=gibMitarbeiterX&val=02.07.2014&val2=1&gruppe=FINANZ";
-    static String liesMitarbeiterUrl = "http://old.buhl.de/support/_themes/dienstplan/dienstplanajax.asp?app=liesMitarbeiterX&val=1455";
+    static String dienstplanUrl = "http://old.buhl.de/support/_themes/dienstplan/dienstplan.asp";
+    static String gibMitarbeiterUrl = "http://old.buhl.de/support/_themes/dienstplan/dienstplanajax.asp?app=gibMitarbeiterX";
+    static String liesMitarbeiterUrl = "http://old.buhl.de/support/_themes/dienstplan/dienstplanajax.asp?app=liesMitarbeiterX&val=";
 
     public List<Cookie> getCookies() {
         return cookies;
@@ -33,11 +34,11 @@ public class Parser {
 
     private static List<Cookie> cookies;
 
-    public int getuId() {
+    public static String getuId() {
         return uId;
     }
 
-    public void setuId(int uId) {
+    public void setuId(String uId) {
         this.uId = uId;
     }
 
@@ -59,7 +60,7 @@ public class Parser {
 
     private String username;
     private String password;
-    private int uId;
+    private static String uId;
 
     public static String getName() {
         return name;
@@ -71,6 +72,26 @@ public class Parser {
 
     private static String name;
 
+    private static String firstName;
+
+    public static String getLastName() {
+        return lastName;
+    }
+
+    public static void setLastName(String lastName) {
+        Parser.lastName = lastName;
+    }
+
+    public static String getFirstName() {
+        return firstName;
+    }
+
+    public static void setFirstName(String firstName) {
+        Parser.firstName = firstName;
+    }
+
+    private static String lastName;
+
     public Context getContext() {
         return context;
     }
@@ -81,6 +102,16 @@ public class Parser {
 
     private Context context;
 
+    public String getRefererUrl() {
+        return refererUrl;
+    }
+
+    public void setRefererUrl(String refererUrl) {
+        this.refererUrl = refererUrl;
+    }
+
+    private String refererUrl;
+
     public Parser(String username, String password, Context context) {
         setUsername(username);
         setPassword(password);
@@ -88,6 +119,9 @@ public class Parser {
     }
 
     public boolean login() {
+
+        setCookies(null);
+
         AQuery aq = new AQuery(getContext());
 
         Map<String, Object> loginParams = new HashMap<String, Object>();
@@ -97,7 +131,7 @@ public class Parser {
 
         AjaxCallback<String> ajaxCallback = new AjaxCallback<String>() {
             public void callback(String url, String json, AjaxStatus status) {
-                setCookies(status.getCookies()); // We are saving the cookies in our variable
+                setCookies(status.getCookies());
             }
         };
 
@@ -118,14 +152,13 @@ public class Parser {
         }
     }
 
-
-    public boolean getMitarbeiterName() {
+    private void getDienstplanPage() {
         AQuery aq = new AQuery(getContext());
 
         AjaxCallback<String> ajaxCallback = new AjaxCallback<String>() {
 
-            public void callback(String url2, String json, AjaxStatus status) {
-                setName(json.toString());
+            public void callback(String url, String json, AjaxStatus status) {
+                getUserId(json);
             }
         };
 
@@ -133,7 +166,41 @@ public class Parser {
             ajaxCallback.cookie(cookie.getName(), cookie.getValue());
         }
 
-        ajaxCallback.url(liesMitarbeiterUrl);
+        ajaxCallback.url(dienstplanUrl);
+        ajaxCallback.type(String.class);
+
+        aq.sync(ajaxCallback);
+    }
+
+    private void getUserId(String json) {
+        int positionOfUId = json.indexOf("Benutzer mit ID: ");
+        String uId = json.substring(positionOfUId + 17, positionOfUId + 22);
+        setuId(uId);
+    }
+
+    public boolean getMitarbeiterName() {
+        // load Dienstplan to get the uId
+        getDienstplanPage();
+
+        AQuery aq = new AQuery(getContext());
+
+        AjaxCallback<String> ajaxCallback = new AjaxCallback<String>() {
+
+            public void callback(String url, String json, AjaxStatus status) {
+                int endOfName = json.indexOf("<br />");
+                String name = json.substring(0, endOfName);
+                setName(name);
+                String[] separated = name.split(" ");
+                setFirstName(separated[0]);
+                setLastName(separated[1].trim());
+            }
+        };
+
+        for (Cookie cookie : getCookies()) {
+            ajaxCallback.cookie(cookie.getName(), cookie.getValue());
+        }
+
+        ajaxCallback.url(liesMitarbeiterUrl + getuId());
         ajaxCallback.type(String.class);
 
         aq.sync(ajaxCallback);
@@ -145,5 +212,32 @@ public class Parser {
         } else {
             return false;
         }
+    }
+
+    public void getWorkingHoursByDate() {
+        AQuery aq = new AQuery(getContext());
+
+        AjaxCallback<String> ajaxCallback = new AjaxCallback<String>() {
+
+            public void callback(String url, String json, AjaxStatus status) {
+                int endOfName = json.indexOf("<br />");
+                String name = json.substring(0, endOfName);
+                setName(name);
+                String[] separated = name.split(" ");
+                setFirstName(separated[0]);
+                setLastName(separated[1].trim());
+            }
+        };
+
+        for (Cookie cookie : getCookies()) {
+            ajaxCallback.cookie(cookie.getName(), cookie.getValue());
+        }
+
+        // val=02.07.2014&val2=1
+
+        ajaxCallback.url(liesMitarbeiterUrl + getuId());
+        ajaxCallback.type(String.class);
+
+        aq.sync(ajaxCallback);
     }
 }
