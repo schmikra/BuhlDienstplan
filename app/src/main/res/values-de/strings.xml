@@ -3,6 +3,7 @@
     <!-- German -->
     <string name="app_name">Buhl Dienstplan</string>
     <string name="action_settings">Einstellungen</string>
+    <string name="action_exit">Beenden</string>
     <string name="action_sign_in">Anmelden</string>
     <string name="action_sign_in_short">Anmelden</string>
     <string name="error_field_required">Dieses Feld ist erforderlich</string>
